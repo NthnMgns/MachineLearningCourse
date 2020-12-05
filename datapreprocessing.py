@@ -44,25 +44,15 @@ def encodeTime(data):
         data["cos_"+feature] = np.cos(data[feature+"_norm"])
         data["sin_"+feature] = np.sin(data[feature+"_norm"])
         data.drop(feature+"_norm", axis=1, inplace=True)
-    
     return data
 
 def aggregateVolume(data):
     """Sum the volumes of rows describing the same event"""
-    
-    data["concat"] = (data["location_name"].astype('str') + data["Year"].astype('str') 
-                      + data["Month"].astype('str') + data["Day"].astype('str')
-                      + data["Day of Week"].astype('str') + data["Time Bin"].astype('str')
-                      + data["direction_x"].astype('str') + data["direction_y"].astype('str'))
-    aggdata = data.groupby("concat")["concat", "Volume"].sum()
-    
-    data = data.drop_duplicates(subset="concat")
+    aggdata = data.groupby(['location_name','Year','Month','Day','Time Bin', "direction_x", "direction_y"]).agg({'Volume':'sum'})
     data.drop(["Volume"], axis=1, inplace=True)
-    data = pd.merge(data, aggdata, on="concat")
-    data.drop(["concat"], axis=1, inplace=True)
-    
-    return data
+    data = data.drop_duplicates(subset=['location_name','Year','Month','Day','Time Bin', "direction_x", "direction_y"])
+    return pd.merge(data, aggdata, on=['location_name','Year','Month','Day','Time Bin', "direction_x", "direction_y"])
 
 if __name__ == '__main__':
     data = preprecessing()
-    print(data.head())
+    #print(data.head())
