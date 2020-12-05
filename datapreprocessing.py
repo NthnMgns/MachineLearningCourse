@@ -2,16 +2,20 @@
 """
 Created on Tue Dec  1 19:51:14 2020
 
-@author: miguens1u
+@author: Nathan Miguens & Hugues Raguenes
 
-Inspired by : https://towardsdatascience.com/all-about-categorical-variable-encoding-305f3361fd02
-and : https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
+Inspired by : 
+    - https://towardsdatascience.com/all-about-categorical-variable-encoding-305f3361fd02
+    - https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
+    - https://towardsdatascience.com/data-normalization-with-pandas-and-scikit-learn-7c1cc6ed6475
+
 """
+
 import pandas as pd
 import numpy as np
 import pickle
 
-def preprecessing(file = "data/Radar_Traffic_Counts.csv", save = True):
+def preprecessing(file = "data/Radar_Traffic_Counts.csv", save = False):
     """preprocessing main function"""
     data = pd.read_csv(file, header = 0, nrows = 1000)
     data = encodeDirection(data)
@@ -65,15 +69,14 @@ def dropUseless(data):
         data.drop(feat, axis=1, inplace=True)
     return data
 
-def serializationData(data, meanStd):
+def serializationData(data, meanStd, name = ""):
     """Save data with Pickle library"""
-    pickle.dump(data, open( "data/preprocessedData.p", "wb" ))
-    pickle.dump(meanStd, open( "data/preprocessedData_meanStd.p", "wb" ))
+    pickle.dump(data, open( "data/preprocessedData_ " + name + ".p", "wb" ))
+    pickle.dump(meanStd, open( "data/preprocessedData_meanStd_" + name + ".p", "wb" ))
     return 
 
 def scaleData(data):
-    """https://towardsdatascience.com/data-normalization-with-pandas-and-scikit-learn-7c1cc6ed6475
-        - create a dataFrame to save mean, std of all features
+    """ - create a dataFrame to save mean, std of all features
         - Normalize data
     """
     meanStd = pd.DataFrame()
@@ -85,4 +88,4 @@ def scaleData(data):
 
 if __name__ == '__main__':
     data = preprecessing()
-    #print(data.head())
+    print(data.head())
