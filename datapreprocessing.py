@@ -9,6 +9,7 @@ and : https://towardsdatascience.com/cyclical-features-encoding-its-about-time-c
 """
 import pandas as pd
 import numpy as np
+import pickle
 
 def preprecessing(file = "data/Radar_Traffic_Counts.csv"):
     """preprocessing main function"""
@@ -16,6 +17,8 @@ def preprecessing(file = "data/Radar_Traffic_Counts.csv"):
     data = encodeDirection(data)
     data = encodeTime(data)
     data = aggregateVolume(data)
+    data = dropUseless(data)
+    serializationData(data)
     return data
 
 def encodeDirection(data):
@@ -53,6 +56,17 @@ def aggregateVolume(data):
     data = data.drop_duplicates(subset=['location_name','Year','Month','Day','Time Bin', "direction_x", "direction_y"])
     return pd.merge(data, aggdata, on=['location_name','Year','Month','Day','Time Bin', "direction_x", "direction_y"])
 
+def dropUseless(data):
+    """Delete useless features"""
+    uselessFeatures = ['location_name', 'Month','Day','Day of Week', 'Hour', 'Minute', 'Time', 'Time Bin']
+    for feat in uselessFeatures :
+        data.drop(feat, axis=1, inplace=True)
+    return data
+
+def serializationData(data):
+    """Save data with Pickle library"""
+    pickle.dump(data, open( "data/preprocessedData.p", "wb" ))
+    return 
 if __name__ == '__main__':
     data = preprecessing()
     #print(data.head())
