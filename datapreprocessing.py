@@ -11,14 +11,16 @@ import pandas as pd
 import numpy as np
 import pickle
 
-def preprecessing(file = "data/Radar_Traffic_Counts.csv"):
+def preprecessing(file = "data/Radar_Traffic_Counts.csv", save = True):
     """preprocessing main function"""
     data = pd.read_csv(file, header = 0, nrows = 1000)
     data = encodeDirection(data)
     data = encodeTime(data)
     data = aggregateVolume(data)
     data = dropUseless(data)
-    serializationData(data)
+    data, meanStd = scaleData(data)
+    if save :
+        serializationData(data, meanStd)
     return data
 
 def encodeDirection(data):
@@ -63,10 +65,24 @@ def dropUseless(data):
         data.drop(feat, axis=1, inplace=True)
     return data
 
-def serializationData(data):
+def serializationData(data, meanStd):
     """Save data with Pickle library"""
     pickle.dump(data, open( "data/preprocessedData.p", "wb" ))
+    pickle.dump(meanStd, open( "data/preprocessedData_meanStd.p", "wb" ))
     return 
+
+def scaleData(data):
+    """https://towardsdatascience.com/data-normalization-with-pandas-and-scikit-learn-7c1cc6ed6475
+        - create a dataFrame to save mean, std of all features
+        - Normalize data
+    """
+    meanStd = pd.DataFrame()
+    for feature in data.columns:
+        m, std = data[feature].mean(), data[feature].std()
+        data[feature] = (data[feature] - m)/std
+        meanStd[feature] = {'mean':m, 'std' : std}
+    return data, meanStd
+
 if __name__ == '__main__':
     data = preprecessing()
     #print(data.head())
