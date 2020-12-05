@@ -3,12 +3,16 @@
 Created on Mon Nov 23 17:32:39 2020
 
 @author: Nathan Miguens & Hugues Raguenes
+
+Objectif : A définir
 """
 
 import torch
 import pandas as pd
 import numpy as np
 import pickle
+
+from torch.utils.data import DataLoader
 
 def loadData(path):
     """Load data from pickle serialized file"""
@@ -28,7 +32,7 @@ def pandasToTorch(dataFrames):
     """Transform pandas data to torch data"""
     tData = []
     for dataFrame in dataFrames :
-        tData.append(torch.from_numpy(dataFrame.values))
+        tData.append(DataLoader(dataFrame.values, batch_size=512))
     return tData
 
 
@@ -36,4 +40,4 @@ def pandasToTorch(dataFrames):
 if __name__ == '__main__':
     data = loadData("data/preprocessedData.p")
     train_set, test_set, valid_set = splitData(data)
-    print(data.head())
+    
