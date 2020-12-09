@@ -53,7 +53,7 @@ def importMeanStd(path):
 def getVectorX(train_indiv):
     """At first we considere nnly Volumes"""
     train = train_indiv[:,-1, 2:]
-    labels = train_indiv[:,-1,:2]
+    labels = train_indiv[:,-1,:2] * std + mean
     return train, labels
 
 def train(model, train_loader, lossF, losses, optimizer):
@@ -71,10 +71,10 @@ def train(model, train_loader, lossF, losses, optimizer):
         # Optimizing the parameters
         optimizer.step()
         if iter%100 == 0:
-            losses.append(loss.norm())
-            test(model, test_loader, accuracies, mean, std)
+            losses.append(loss)
+            test(model, test_loader, accuracies)
             
-def test(model, test_loader, accuracies, mean, std):
+def test(model, test_loader, accuracies):
     """Test processing"""
     model.eval()
     sumLoss = 0
@@ -83,7 +83,7 @@ def test(model, test_loader, accuracies, mean, std):
         for X in train_loader:
             train, labels = getVectorX(X)
             outputs = model(train)
-            sumLoss += 1 - (lossF(outputs, labels) * std + mean).abs().sum() / (output_dim * batch_size)
+            sumLoss += 1 - (lossF(outputs, labels))/labels.abs().sum()
     accuracies.append(sumLoss/N)
     
 # --------------------------------------------------------------------------- #
@@ -126,7 +126,6 @@ accuracies = []
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
-    test(model, test_loader, accuracies, mean, std)
     
 plt.plot(losses)
 plt.yscale('log')
