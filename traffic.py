@@ -70,7 +70,7 @@ def train(model, train_loader, lossF, losses, optimizer):
         loss.backward()
         # Optimizing the parameters
         optimizer.step()
-        if iter%100 == 0:
+        if iter%10 == 0:
             losses.append(loss)
             test(model, test_loader, accuracies)
             
@@ -106,7 +106,7 @@ hidden_dim = 128
 nb_layers = 5
 
 learning_rate = 0.001
-nb_epoch = 50
+nb_epoch = 20
 batch_size = 256
 
 model = MLP(input_dim, hidden_dim, nb_layers, output_dim)
@@ -128,7 +128,7 @@ for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
     
 plt.plot(losses)
-plt.yscale('log')
+#plt.yscale('log')
 plt.show()
 
 plt.plot(accuracies)
