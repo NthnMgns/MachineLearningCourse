@@ -84,7 +84,7 @@ def scaleData(data):
         if feature != 'location_name':
             m, std = data[feature].mean(), data[feature].std()
             data[feature] = (data[feature] - m)/std
-            meanStd[feature] = {'mean':m, 'std' : std}
+            meanStd[feature] = [m, std]
     return data, meanStd
 
 if __name__ == '__main__':

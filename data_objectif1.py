@@ -31,6 +31,7 @@ import torch
 import pandas as pd
 import numpy as np
 import pickle
+from tqdm import tqdm
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -63,6 +64,13 @@ def sampleTime(data):
     timeSample = timeSample.sort_values()
     return timeSample.reset_index(drop=True)
 
+def dropUseless(data):
+    """Delete useless features"""
+    uselessFeatures = ['Month','Day','Day of Week', 'Year', 'Minute', 'Hour', 'Time']
+    for feat in uselessFeatures :
+        data.drop(feat, axis=1, inplace=True)
+    return data
+
 def featuresEncoding(data, timeSample, name_dict):
     """Encode informations from data in a correct format :
         - All futur vectors with same dimensions
@@ -70,13 +78,14 @@ def featuresEncoding(data, timeSample, name_dict):
         - Columns 0 and 1 corresponding to labels
         - Other columns are the observations """
     X = []
-    for time in timeSample :
+    for time in tqdm(timeSample) :
         if str(time) != "nan" :
             temp = data.loc[data["Full Time"] == time]
             temp = temp.sort_values(by = ["location_name"])
             temp = temp.set_index(["location_name"])
             temp = temp.reindex(pd.RangeIndex(len(name_dict))).fillna(0.)
-            X.append(temp.T)
+            temp = dropUseless(temp)
+            X.append(torch.tensor(temp.T.values,dtype=torch.float32))
     return X
 
 def splitData(data):
@@ -96,7 +105,7 @@ def pandasToTorch(dataFrames):
     return tData
 
 if __name__ == '__main__':
-    data = loadData("data/preprocessedData_mini.p")
+    data = loadData("data/preprocessedData.p")
     train_set, test_set = splitData(data)
-    pickle.dump(train_set, open( "data/train_1_mini.p", "wb" ))
-    pickle.dump(test_set, open( "data/test_1_mini.p", "wb" ))
+    pickle.dump(train_set, open( "data/train_1.p", "wb" ))
+    pickle.dump(test_set, open( "data/test_1.p", "wb" ))
