@@ -22,8 +22,8 @@ Choix du lieu :  BURNET RD / PALM WAY (IBM DRIVEWAY)
 """
 #-------------------------------# Variables #---------------------------------#
 
-station_name1 = " BURNET RD / PALM WAY (IBM DRIVEWAY) NB"
-station_name2 = " BURNET RD / PALM WAY (IBM DRIVEWAY) SB"
+station_name1 = "700 BLK E CESAR CHAVEZ ST EB"
+station_name2 = "700 BLK E CESAR CHAVEZ ST WB"
 
 #-----------------------------------------------------------------------------#
 
@@ -107,5 +107,5 @@ def pandasToTorch(dataFrames):
 if __name__ == '__main__':
     data = loadData("data/preprocessedData.p")
     train_set, test_set = splitData(data)
-    pickle.dump(train_set, open( "data/train_1.p", "wb" ))
-    pickle.dump(test_set, open( "data/test_1.p", "wb" ))
+    pickle.dump(train_set, open( "data/train_2.p", "wb" ))
+    pickle.dump(test_set, open( "data/test_2.p", "wb" ))

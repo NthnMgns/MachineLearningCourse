@@ -30,6 +30,10 @@ Inspired by :
 # 1er model : Multi Layer Perceptron
 # 2nd model : CNNs
 # 3rd model : LSTM
+
+Les Volumes étant trop corrélés entre les stations, la tache du réseau semble 
+"trop" facile. Il trouve une solution à plus de 90% correct dès les premières 
+itérations. Même un MLP classique réalise cette tâche correctement.
 """
 
 import pickle
@@ -90,8 +94,8 @@ def test(model, test_loader, accuracies):
 # Import data
 # --------------------------------------------------------------------------- #
 
-train_set = list(pickle.load(open("data/train_1.p", "rb" )))
-test_set = list(pickle.load(open("data/test_1.p", "rb" )))
+train_set = list(pickle.load(open("data/train_2.p", "rb" )))
+test_set = list(pickle.load(open("data/test_2.p", "rb" )))
 
 mean, std = importMeanStd("data/preprocessedData_meanStd.p")
 
