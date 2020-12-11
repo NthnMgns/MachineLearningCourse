@@ -11,29 +11,20 @@ Created on Mon Nov 23 17:32:39 2020
 
 @author: Nathan Miguens & Hugues Raguenes
 
-Contexte : Une entreprise essaie d'estimer le trafic d'un carrefour. Elle 
-        enregistre pendant 2 ans ce trafic à l'aide d'un capteur. Par la suite,
-        ce capteur est nécessaire pour une autre utilisation. Il doit donc être
-        retirer du carrefour mais l'on souhaite toujours connaitre son trafic
+Contexte : 
+        Une entreprise (ex: proposant des services de GPS et d'itinéraires) 
+        veut estimer le trafic à différents carrefours de la ville, pour ainsi
+        pouvoir proposer le trajet avec le moins de circulation.
 
-Objectif : Estimer le trafic de ce carrefour avec les données qu'on récolte 
-        ailleurs dans la ville.
-        
-        Précision : Trouver le trafic du lieu à un instant donné connaissant le trafic des
-        autres lieux à ce même moment.
-        
-Choix du lieu :  BURNET RD / PALM WAY (IBM DRIVEWAY)
+Objectif : 
+        Estimer le trafic à tous les carrefours à une date donnée, 
+        connaissant les volumes de trafics antérieurs.
 
-Inspired by : 
-    - https://github.com/yunjey/pytorch-tutorial/blob/master/tutorials/01-basics/feedforward_neural_network/main.py#L37-L49
+Choix des lieux :  ALL
 
 # 1er model : Multi Layer Perceptron
-# 2nd model : CNNs
-# 3rd model : LSTM
+# 2nd model : LSTM
 
-Les Volumes étant trop corrélés entre les stations, la tache du réseau semble 
-"trop" facile. Il trouve une solution à plus de 90% correct dès les premières 
-itérations. Même un MLP classique réalise cette tâche correctement.
 """
 
 import pickle
@@ -52,21 +43,33 @@ def importMeanStd(path):
     ms = pd.DataFrame(pickle.load(open( path, "rb" )))
     mean = torch.tensor(ms["Volume"][0])
     std = torch.tensor(ms["Volume"][1])
+    #print(mean, std)
     return mean, std
 
 def getVectorX(train_indiv):
-    """At first we considere nnly Volumes"""
+    """At first we considere only Volumes"""
     train = train_indiv[:,-1, 2:]
     labels = train_indiv[:,-1,:2] * std + mean
     return train, labels
+
+
+def getSequence(train_indiv):
+    """At first we considere only Volumes"""
+    train = train_indiv[:,:-1, :]
+    labels = train_indiv[:,-1, :] * std + mean
+    return train, labels
+
 
 def train(model, train_loader, lossF, losses, optimizer):
     """Train processing"""
     model.train()
     for iter, X in enumerate(train_loader):
-        train, labels = getVectorX(X)
+        train, labels = getSequence(X)
+        #return train
         # Forward pass 
         outputs = model(train)
+        print(outputs.size())
+        print(labels.size())
         loss = lossF(outputs, labels)
         # Initializing a gradient as 0 so there is no mixing of gradient among the batches
         optimizer.zero_grad() 
@@ -85,7 +88,7 @@ def test(model, test_loader, accuracies):
     N = len(train_loader)
     with torch.no_grad():
         for X in train_loader:
-            train, labels = getVectorX(X)
+            train, labels = getSequence(X)
             outputs = model(train)
             sumLoss += 1 - (lossF(outputs, labels))/labels.abs().sum()
     accuracies.append(sumLoss/N)
@@ -94,13 +97,13 @@ def test(model, test_loader, accuracies):
 # Import data
 # --------------------------------------------------------------------------- #
 
-train_set = list(pickle.load(open("data/train_2.p", "rb" )))
-test_set = list(pickle.load(open("data/test_2.p", "rb" )))
+train_set = list(pickle.load(open("data/train_obj2.p", "rb" )))
+test_set = list(pickle.load(open("data/test_obj2.p", "rb" )))
 
 mean, std = importMeanStd("data/preprocessedData_meanStd.p")
 
-input_dim = list(train_set[0].size())[1] - 2
-output_dim = 2
+input_dim = list(train_set[0].size())[1] #all locations
+output_dim = list(train_set[0].size())[1] #all locations
 
 # --------------------------------------------------------------------------- #
 # Model and (hyper)parameters
@@ -125,8 +128,12 @@ test_loader = DataLoader(test_set, batch_size=batch_size, shuffle = True)
 # Train model
 # --------------------------------------------------------------------------- #
 
+
+
 losses = []
 accuracies = []
+
+#x_train = train(model, train_loader, lossF, losses, optimizer)
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
