@@ -75,6 +75,10 @@ def train(model, train_loader, lossF, losses, optimizer):
         # Optimizing the parameters
         optimizer.step()
         if iter%10 == 0:
+            # print(train[0] * std + mean )
+            # print(labels[0])
+            # print(outputs[0])
+            # print(loss)
             losses.append(loss)
             test(model, test_loader, accuracies)
             
@@ -87,7 +91,7 @@ def test(model, test_loader, accuracies):
         for X in train_loader:
             train, labels = getVectorX(X)
             outputs = model(train)
-            sumLoss += 1 - (lossF(outputs, labels))/labels.abs().sum()
+            sumLoss += 1 - torch.sqrt(lossF(outputs, labels))/labels.mean()
     accuracies.append(sumLoss/N)
     
 # --------------------------------------------------------------------------- #
@@ -130,7 +134,11 @@ accuracies = []
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
-    
+
+# --------------------------------------------------------------------------- #
+# Display Loss and accuracy
+# --------------------------------------------------------------------------- #
+  
 plt.plot(losses)
 #plt.yscale('log')
 plt.show()
@@ -138,3 +146,9 @@ plt.show()
 plt.plot(accuracies)
 plt.show()
 
+# --------------------------------------------------------------------------- #
+# Save model
+# --------------------------------------------------------------------------- #
+
+# pathModel = "savedModel/MPL_obj1.m"
+# torch.save(model, pathModel)
