@@ -22,8 +22,9 @@ Objectif :
 
 Choix des lieux :  ALL
 
-# 1er model : Multi Layer Perceptron
-# 2nd model : LSTM
+# 1st model : Multi Layer Perceptron
+# 2nd model : CNN
+# 3rd model : LSTM
 
 """
 
@@ -81,7 +82,7 @@ def test(model, test_loader, accuracies):
         for X in train_loader:
             train, labels = getSequenceMLP(X)
             outputs = model(train)
-            sumLoss += 1 - (lossF(outputs, labels))/labels.abs().sum()
+            sumLoss += 1 - torch.sqrt(lossF(outputs, labels))/labels.mean()
     accuracies.append(sumLoss/N)
     
 # --------------------------------------------------------------------------- #
@@ -101,11 +102,11 @@ output_dim = size[1] #all locations
 # Model and (hyper)parameters
 # --------------------------------------------------------------------------- #
 
-hidden_dim = 128
+hidden_dim = 256
 nb_layers = 5
 
 learning_rate = 0.001
-nb_epoch = 20
+nb_epoch = 100
 batch_size = 256
 
 model = MLP(input_dim, hidden_dim, nb_layers, output_dim)
