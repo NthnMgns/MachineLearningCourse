@@ -27,6 +27,7 @@ import pickle
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from tqdm import tqdm
 
 def loadData(path):
     """Load data from pickle serialized file"""
@@ -70,7 +71,7 @@ def featuresEncoding(data, name_dict):
         - Other columns are the observations """
     X = []
     timeSample =  data['Full Time'].unique()
-    for time in timeSample:
+    for time in tqdm(timeSample):
         temp = data.loc[data["Full Time"] == time]
         temp = temp.sort_values(by = ["location_name"])
         temp = temp.set_index(["location_name"])

@@ -22,8 +22,9 @@ Objectif :
 
 Choix des lieux :  ALL
 
-# 1er model : Multi Layer Perceptron
-# 2nd model : LSTM
+# 1st model : Multi Layer Perceptron
+# 2nd model : CNN
+# 3rd model : LSTM
 
 """
 
@@ -45,16 +46,10 @@ def importMeanStd(path):
     std = torch.tensor(ms["Volume"][1])
     return mean, std
 
-def getVectorX(train_indiv):
-    """At first we considere only Volumes"""
-    train = train_indiv[:,-1, 2:]
-    labels = train_indiv[:,-1,:2] * std + mean
-    return train, labels
 
-
-def getSequence(train_indiv):
-    """At first we considere only Volumes"""
-    train = train_indiv[:,:-1, :]
+def getSequenceMLP(train_indiv):
+    """Split in inputs and labels for MLP (input is a vector not a matrice)"""
+    train = train_indiv[:,:-1, :].view(train_indiv.shape[0], -1)
     labels = train_indiv[:,-1, :] * std + mean
     return train, labels
 
@@ -63,8 +58,7 @@ def train(model, train_loader, lossF, losses, optimizer):
     """Train processing"""
     model.train()
     for iter, X in enumerate(train_loader):
-        train, labels = getSequence(X)
-        #return train
+        train, labels = getSequenceMLP(X)
         # Forward pass 
         outputs = model(train)
         loss = lossF(outputs, labels)
@@ -85,9 +79,9 @@ def test(model, test_loader, accuracies):
     N = len(train_loader)
     with torch.no_grad():
         for X in train_loader:
-            train, labels = getSequence(X)
+            train, labels = getSequenceMLP(X)
             outputs = model(train)
-            sumLoss += 1 - (lossF(outputs, labels))/labels.abs().sum()
+            sumLoss += 1 - torch.sqrt(lossF(outputs, labels))/labels.mean()
     accuracies.append(sumLoss/N)
     
 # --------------------------------------------------------------------------- #
@@ -99,18 +93,19 @@ test_set = list(pickle.load(open("data/test_obj2.p", "rb" )))
 
 mean, std = importMeanStd("data/preprocessedData_meanStd.p")
 
-input_dim = list(train_set[0].size())[1] #all locations
-output_dim = list(train_set[0].size())[1] #all locations
+size = list(train_set[0].size())
+input_dim = (size[0] -1) * size[1] #all locations
+output_dim = size[1] #all locations
 
 # --------------------------------------------------------------------------- #
 # Model and (hyper)parameters
 # --------------------------------------------------------------------------- #
 
-hidden_dim = 128
+hidden_dim = 256
 nb_layers = 5
 
 learning_rate = 0.001
-nb_epoch = 20
+nb_epoch = 100
 batch_size = 256
 
 model = MLP(input_dim, hidden_dim, nb_layers, output_dim)
