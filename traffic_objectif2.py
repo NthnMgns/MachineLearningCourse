@@ -44,7 +44,6 @@ def importMeanStd(path):
     ms = pd.DataFrame(pickle.load(open( path, "rb" )))
     mean = torch.tensor(ms["Volume"][0])
     std = torch.tensor(ms["Volume"][1])
-    #print(mean, std)
     return mean, std
 
 
@@ -132,20 +131,14 @@ test_loader = DataLoader(test_set, batch_size=batch_size, shuffle = True)
 # Train model
 # --------------------------------------------------------------------------- #
 
-
-
 losses = []
 accuracies = []
-
-#x_train = train(model, train_loader, lossF, losses, optimizer)
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
     
 plt.plot(losses)
-#plt.yscale('log')
 plt.show()
 
 plt.plot(accuracies)
 plt.show()
-
