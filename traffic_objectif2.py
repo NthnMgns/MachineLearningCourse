@@ -43,7 +43,6 @@ def importMeanStd(path):
     ms = pd.DataFrame(pickle.load(open( path, "rb" )))
     mean = torch.tensor(ms["Volume"][0])
     std = torch.tensor(ms["Volume"][1])
-    #print(mean, std)
     return mean, std
 
 def getVectorX(train_indiv):
@@ -68,8 +67,6 @@ def train(model, train_loader, lossF, losses, optimizer):
         #return train
         # Forward pass 
         outputs = model(train)
-        print(outputs.size())
-        print(labels.size())
         loss = lossF(outputs, labels)
         # Initializing a gradient as 0 so there is no mixing of gradient among the batches
         optimizer.zero_grad() 
