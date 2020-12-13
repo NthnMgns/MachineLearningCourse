@@ -37,7 +37,7 @@ from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from models import MLP, CNN
+from models import MLP, CNN, LSTM
 
 def importMeanStd(path):
     """Import mean std of volume"""
@@ -54,19 +54,34 @@ def getSequenceMLP(train_indiv):
     return train, labels
 
 def getSequenceCNN(train_indiv):
-    """Split in inputs and labels for MLP (input is a matrice)"""
+    """Split in inputs and labels for MLP 
+    (input is a matrice of size (batch_size, 1, input_size[0], input_size[1]))
+    """
     train = train_indiv[:,:-1, :].unsqueeze(1)
+    labels = train_indiv[:,-1, :] * std + mean
+    return train, labels
+
+def getSequenceLSTM(train_indiv):
+    """Split in inputs and labels for LSTM 
+    (input is a matrice of size (batch_size, input_size[0], input_size[1]))"""
+    train = train_indiv[:,:-1, :].transpose(1,2)
     labels = train_indiv[:,-1, :] * std + mean
     return train, labels
 
 def train(model, train_loader, lossF, losses, optimizer):
     """Train processing"""
     model.train()
+    # h = model.init_hidden(batch_size)
     for iter, X in enumerate(train_loader):
+        # if len(X) != batch_size :
+        #     break
         # train, labels = getSequenceMLP(X)
         train, labels = getSequenceCNN(X)
+        # train, labels = getSequenceLSTM(X)
+        # h = tuple([e.data for e in h])
         # Forward pass 
         outputs = model(train)
+        # outputs, h = model(train, h)
         loss = lossF(outputs, labels)
         # Initializing a gradient as 0 so there is no mixing of gradient among the batches
         optimizer.zero_grad() 
@@ -76,7 +91,7 @@ def train(model, train_loader, lossF, losses, optimizer):
         optimizer.step()
         if iter%10 == 0:
             losses.append(loss)
-            test(model, test_loader, accuracies)
+            # test(model, test_loader, accuracies)
             
 def test(model, test_loader, accuracies):
     """Test processing"""
@@ -84,9 +99,16 @@ def test(model, test_loader, accuracies):
     sumLoss = 0
     N = len(train_loader)
     with torch.no_grad():
-        for X in train_loader:
+        # val_h = model.init_hidden(batch_size)
+        for X in test_loader:
+            if len(X) != batch_size :
+                break
             # train, labels = getSequenceMLP(X)
             train, labels = getSequenceCNN(X)
+            # train, labels = getSequenceLSTM(X)
+            # val_h = tuple([each.data for each in val_h])
+            # outputs, val_h = model(train, val_h)
+            
             outputs = model(train)
             sumLoss += 1 - torch.sqrt(lossF(outputs, labels))/labels.mean()
     accuracies.append(sumLoss/N)
@@ -101,24 +123,25 @@ test_set = list(pickle.load(open("data/test_obj2.p", "rb" )))
 mean, std = importMeanStd("data/preprocessedData_meanStd.p")
 
 size = list(train_set[0].size())
-input_dim = (size[0] -1) * size[1] #all locations
+input_dim_MLP = (size[0] -1) * size[1] #all locations
+input_dim_LSTM = size[0] -1
 output_dim = size[1] #all locations
 
 # --------------------------------------------------------------------------- #
 # Model and (hyper)parameters
 # --------------------------------------------------------------------------- #
 
-hidden_dim = 256
+hidden_dim = 128
 nb_layers = 5
 
 learning_rate = 0.001
 nb_epoch = 50
-batch_size = 256
+batch_size = 128
 
 
-# model = MLP(input_dim, hidden_dim, nb_layers, output_dim)
+# model = MLP(input_dim_MLP, hidden_dim, nb_layers, output_dim)
 model = CNN(output_dim)
-# model = LSTM()
+# model = LSTM(input_dim_LSTM, output_dim, hidden_dim, nb_layers)  
 
 lossF = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -136,6 +159,7 @@ accuracies = []
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
+    test(model, test_loader, accuracies)
     
 plt.plot(losses)
 plt.show()

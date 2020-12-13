@@ -6,6 +6,7 @@ Created on Wed Dec  9 08:43:01 2020
 
 Inspired by :
     - https://github.com/pytorch/examples
+    - https://blog.floydhub.com/long-short-term-memory-from-zero-to-hero-with-pytorch/
 """
 
 import torch
@@ -56,23 +57,32 @@ class CNN(nn.Module):
         return output
     
 class LSTM(nn.Module):
-    def __init__(self, output_dim):
+    def __init__(self, input_dim, output_size, hidden_dim, n_layers):
         super(LSTM, self).__init__()
-        self.lstm1 = nn.LSTMCell(1, 51)
-        self.lstm2 = nn.LSTMCell(51, 51)
-        self.linear = nn.Linear(51, output_dim)
-
-    def forward(self, input, future = 0):
-        outputs = []
-        h_t = torch.zeros(input.size(0), 51, dtype=torch.double)
-        c_t = torch.zeros(input.size(0), 51, dtype=torch.double)
-        h_t2 = torch.zeros(input.size(0), 51, dtype=torch.double)
-        c_t2 = torch.zeros(input.size(0), 51, dtype=torch.double)
-
-        for input_t in input.split(1, dim=1):
-            h_t, c_t = self.lstm1(input_t, (h_t, c_t))
-            h_t2, c_t2 = self.lstm2(h_t, (h_t2, c_t2))
-            output = self.linear(h_t2)
-            outputs += [output]
-        outputs = torch.cat(outputs, dim=1)
-        return outputs
+        self.output_size = output_size
+        self.n_layers = n_layers
+        self.hidden_dim = hidden_dim
+        
+        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, batch_first=True)
+        self.dropout = nn.Dropout(0.5)
+        self.fc = nn.Linear(hidden_dim, output_size)
+        
+    def forward(self, x, hidden):
+        batch_size = x.size(0)
+        x = x
+        lstm_out, hidden = self.lstm(x, hidden)
+        # lstm_out = lstm_out.contiguous().view(-1, self.hidden_dim)
+        
+        out = self.dropout(lstm_out)
+        out = self.fc(out)
+        # out = F.relu(out)
+        
+        # out = out.view(batch_size, -1)
+        out = out[:,-1, :]
+        return out, hidden
+    
+    def init_hidden(self, batch_size):
+        weight = next(self.parameters()).data
+        hidden = (weight.new(self.n_layers, batch_size, self.hidden_dim).zero_(),
+                      weight.new(self.n_layers, batch_size, self.hidden_dim).zero_())
+        return hidden
