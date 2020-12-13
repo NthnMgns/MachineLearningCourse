@@ -44,7 +44,6 @@ def importMeanStd(path):
     ms = pd.DataFrame(pickle.load(open( path, "rb" )))
     mean = torch.tensor(ms["Volume"][0])
     std = torch.tensor(ms["Volume"][1])
-    #print(mean, std)
     return mean, std
 
 
@@ -62,8 +61,6 @@ def train(model, train_loader, lossF, losses, optimizer):
         train, labels = getSequenceMLP(X)
         # Forward pass 
         outputs = model(train)
-        print(outputs.size())
-        print(labels.size())
         loss = lossF(outputs, labels)
         # Initializing a gradient as 0 so there is no mixing of gradient among the batches
         optimizer.zero_grad() 
@@ -123,20 +120,14 @@ test_loader = DataLoader(test_set, batch_size=batch_size, shuffle = True)
 # Train model
 # --------------------------------------------------------------------------- #
 
-
-
 losses = []
 accuracies = []
-
-#x_train = train(model, train_loader, lossF, losses, optimizer)
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
     
 plt.plot(losses)
-#plt.yscale('log')
 plt.show()
 
 plt.plot(accuracies)
 plt.show()
-

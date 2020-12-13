@@ -21,7 +21,7 @@ def preprecessing(file = "data/Radar_Traffic_Counts.csv", save = True):
     data = encodeDirection(data)
     data = encodeTime(data)
     data = aggregateVolume(data)
-    #data = dropUseless(data)
+    data = dropUseless(data)
     data, meanStd = scaleData(data)
     if save :
         serializationData(data, meanStd)

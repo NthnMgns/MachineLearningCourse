@@ -74,7 +74,6 @@ def featuresEncoding(data, name_dict):
         temp = temp.set_index(["location_name"])
         temp = temp.reindex(pd.RangeIndex(len(name_dict))).fillna(0.)
         temp = dropUseless(temp)
-        print(temp.T.values)
         X.append(torch.tensor(temp.T.values,dtype=torch.float32))
     return X
 
@@ -97,5 +96,5 @@ def pandasToTorch(dataFrames):
 if __name__ == '__main__':
     data = loadData("data/preprocessedData.p")
     train_set, test_set = splitData(data)
-    #pickle.dump(train_set, open( "data/train_obj2.p", "wb" ))
-    #pickle.dump(test_set, open( "data/test_obj2.p", "wb" ))
+    pickle.dump(train_set, open( "data/train_obj2.p", "wb" ))
+    pickle.dump(test_set, open( "data/test_obj2.p", "wb" ))
