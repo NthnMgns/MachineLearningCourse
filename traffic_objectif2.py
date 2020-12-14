@@ -73,8 +73,8 @@ def train(model, train_loader, lossF, losses, optimizer):
     model.train()
     # h = model.init_hidden(batch_size)
     for iter, X in enumerate(train_loader):
-        # if len(X) != batch_size :
-        #     break
+        if len(X) != batch_size :
+            break
         # train, labels = getSequenceMLP(X)
         train, labels = getSequenceCNN(X)
         # train, labels = getSequenceLSTM(X)
@@ -91,13 +91,13 @@ def train(model, train_loader, lossF, losses, optimizer):
         optimizer.step()
         if iter%10 == 0:
             losses.append(loss)
-            # test(model, test_loader, accuracies)
+            test(model, test_loader, accuracies)
             
 def test(model, test_loader, accuracies):
     """Test processing"""
     model.eval()
     sumLoss = 0
-    N = len(train_loader)
+    N = len(test_loader)
     with torch.no_grad():
         # val_h = model.init_hidden(batch_size)
         for X in test_loader:
@@ -159,7 +159,7 @@ accuracies = []
 
 for epoch in tqdm(range(nb_epoch)):
     train(model, train_loader, lossF, losses, optimizer)
-    test(model, test_loader, accuracies)
+    # test(model, test_loader, accuracies)
     
 plt.plot(losses)
 plt.show()

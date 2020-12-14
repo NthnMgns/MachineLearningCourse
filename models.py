@@ -71,14 +71,14 @@ class LSTM(nn.Module):
         batch_size = x.size(0)
         x = x
         lstm_out, hidden = self.lstm(x, hidden)
-        # lstm_out = lstm_out.contiguous().view(-1, self.hidden_dim)
+        lstm_out = lstm_out.contiguous().view(-1, self.hidden_dim)
         
         out = self.dropout(lstm_out)
         out = self.fc(out)
-        # out = F.relu(out)
+        out = F.relu(out)
         
-        # out = out.view(batch_size, -1)
-        out = out[:,-1, :]
+        out = out.view(batch_size, -1)
+        out = out[:,:self.output_size]
         return out, hidden
     
     def init_hidden(self, batch_size):
