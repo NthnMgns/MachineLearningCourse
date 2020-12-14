@@ -28,12 +28,7 @@ Inspired by :
     - https://github.com/yunjey/pytorch-tutorial/blob/master/tutorials/01-basics/feedforward_neural_network/main.py#L37-L49
 
 # 1er model : Multi Layer Perceptron
-# 2nd model : CNNs
-# 3rd model : LSTM
 
-Les Volumes étant trop corrélés entre les stations, la tache du réseau semble 
-"trop" facile. Il trouve une solution à plus de 90% correct dès les premières 
-itérations. Même un MLP classique réalise cette tâche correctement.
 """
 
 import pickle
@@ -86,9 +81,9 @@ def test(model, test_loader, accuracies):
     """Test processing"""
     model.eval()
     sumLoss = 0
-    N = len(train_loader)
+    N = len(test_loader)
     with torch.no_grad():
-        for X in train_loader:
+        for X in test_loader:
             train, labels = getVectorX(X)
             outputs = model(train)
             sumLoss += 1 - torch.sqrt(lossF(outputs, labels))/labels.mean()
